@@ -1,0 +1,11 @@
+build/
+out/
+bin/
+release/*.exe
+*.o
+*.obj
+*.exe
+*.log
+.vscode/
+.idea/
+.DS_Store
