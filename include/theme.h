@@ -28,5 +28,5 @@ namespace Theme {
     inline float ArrowSize = 12.0f;           // Size of the triangle at the end of the pointer
 
 // LAYOUT CONSTANT
-    inline float ControlPanelWidth = 400.0f;  // Everyone's left-side UI panel must be exactly this wide
+    inline float ControlPanelWidth = 430.0f;  // Everyone's left-side UI panel must be exactly this wide
 }
