@@ -9,3 +9,14 @@ release/*.exe
 .vscode/
 .idea/
 .DS_Store
+# Visual Studio cache and settings
+.vs/
+*.ipch
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.wsuo
+DocumentLayout.json
+DocumentLayout.backup.json
+VSWorkspaceState.json
