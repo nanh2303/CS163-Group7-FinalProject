@@ -1,6 +1,7 @@
 #include "hash_table.h"
 
 HashTable::HashTable(int capacity) {
+    this->capacity = capacity;
     table = new Node* [capacity];
 
     for(int i = 0; i < capacity; ++i) {
@@ -21,7 +22,7 @@ HashTable::~HashTable() {
     delete[] table;
 }
 
-HashTable::insert(int value) {
+void HashTable::insert(int value) {
     int index = getHash(value);
 
     Node* temp = new Node (value);
@@ -29,7 +30,7 @@ HashTable::insert(int value) {
     table[index] = temp;
 }
 
-HashTable::remove(int value) {
+void HashTable::remove(int value) {
     int index = getHash(value);
 
     Node* current = table[index];
@@ -52,14 +53,15 @@ HashTable::remove(int value) {
     }
 }
 
-HashTable::search(int value) {
+bool HashTable::search(int value) {
     int index = getHash(value);
     Node* current = table[index];
 
     while(current!=nullptr) {
         if(current->val == value) {
-
+            return true;
         }
         current = current -> next;
     }
+    return false;
 }

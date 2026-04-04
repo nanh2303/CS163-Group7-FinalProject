@@ -22,5 +22,5 @@ public:
     ~HashTable();
     void insert(int value);
     void remove(int value);
-    void search(int value);
+    bool search(int value);
 };
