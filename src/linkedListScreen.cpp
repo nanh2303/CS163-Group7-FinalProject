@@ -71,8 +71,8 @@ void LinkedListScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
 	//DATA OPERATIONS
     ImGui::Text("Data operations:");
     // Initialization
-    if (ImGui::CollapsingHeader("1. Initialize", ImGuiTreeNodeFlags_DefaultOpen)) {
-        if (ImGui::Button("Empty List", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+    if (ImGui::CollapsingHeader("Initialize", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::Button("Empty list", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             linkedList.initEmpty();
             currentStep = 0;
             totalSteps = 0;
@@ -80,23 +80,23 @@ void LinkedListScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
         }
 
         ImGui::Spacing();
-        ImGui::InputInt("Random Count", &randomCount);
-        if (ImGui::Button("Generate Random", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+        ImGui::InputInt("Random count", &randomCount);
+        if (ImGui::Button("Generate random", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             linkedList.initRandom(randomCount);
             startAnimation();
         }
 
         ImGui::Spacing();
         ImGui::InputText("Filepath", filepathBuffer, IM_ARRAYSIZE(filepathBuffer));
-        if (ImGui::Button("Load from File", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+        if (ImGui::Button("Load from file", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             linkedList.initFromFile(filepathBuffer);
             startAnimation();
         }
     }
 
     // Insertion
-    if (ImGui::CollapsingHeader("2. Add Data", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::InputInt("Add Value", &inputValue);
+    if (ImGui::CollapsingHeader("Add", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::InputInt("Add value", &inputValue);
         if (ImGui::Button("Add to Head", ImVec2(140, 0))) {
             linkedList.insertHead(inputValue);
             startAnimation();
@@ -109,28 +109,28 @@ void LinkedListScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
     }
 
     // Deletion
-    if (ImGui::CollapsingHeader("3. Delete Data", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::InputInt("Delete Value", &deleteValue);
-        if (ImGui::Button("Delete First Match", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+    if (ImGui::CollapsingHeader("Delete", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::InputInt("Delete value", &deleteValue);
+        if (ImGui::Button("Delete first match", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             linkedList.deleteValue(deleteValue);
             startAnimation();
         }
     }
 
     // Update
-    if (ImGui::CollapsingHeader("4. Update Data", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::InputInt("Old Value", &updateOldVal);
-        ImGui::InputInt("New Value", &updateNewVal);
-        if (ImGui::Button("Update Node", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+    if (ImGui::CollapsingHeader("Update", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::InputInt("Old value", &updateOldVal);
+        ImGui::InputInt("New value", &updateNewVal);
+        if (ImGui::Button("Update node", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             linkedList.updateValue(updateOldVal, updateNewVal);
             startAnimation();
         }
     }
 
     // Search
-    if (ImGui::CollapsingHeader("5. Search", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::InputInt("Search Value", &searchVal);
-        if (ImGui::Button("Find Node", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+    if (ImGui::CollapsingHeader("Search", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::InputInt("Search value", &searchVal);
+        if (ImGui::Button("Find node", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             linkedList.searchValue(searchVal);
             startAnimation();
         }
@@ -161,28 +161,28 @@ void LinkedListScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
     }
     ImGui::End();
 
-    //PLAYBACK CONTROL BAR
+    // PLAYBACK CONTROL BAR
     float bottomBarHeight = 120.0f;
-    float canvasWidth = window.getSize().x - Theme::ControlPanelWidth;
-    // Position it at the bottom, starting after the left panel
-    ImGui::SetNextWindowPos(ImVec2(Theme::ControlPanelWidth, window.getSize().y - bottomBarHeight));
-    ImGui::SetNextWindowSize(ImVec2(canvasWidth, bottomBarHeight));
 
-    // No background, just floating controls!
+    float middleCanvasWidth = window.getSize().x - Theme::ControlPanelWidth - Theme::CodePanelWidth;
+
+    ImGui::SetNextWindowPos(ImVec2(Theme::ControlPanelWidth, window.getSize().y - bottomBarHeight));
+    ImGui::SetNextWindowSize(ImVec2(middleCanvasWidth, bottomBarHeight));
+
     ImGui::Begin("Playback controls", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground);
 
-    // Center the controls horizontally
-    float controlsWidth = 400.0f;
-    ImGui::SetCursorPosX((canvasWidth - controlsWidth) * 0.5f);
-
     ImVec2 btnSize(45, 30);
+
+    float styleSpacing = ImGui::GetStyle().ItemSpacing.x;
+    float totalTopRowWidth = (btnSize.x * 4.0f) + 120.0f + 50.0f + (styleSpacing * 4.0f);
+
+    ImGui::SetCursorPosX((middleCanvasWidth - totalTopRowWidth) * 0.5f);
 
     // Step back button
     if (ImGui::Button(u8"\uf048", btnSize)) {
         isPlaying = false;
         if (currentStep > 0) currentStep--;
     }
-
     ImGui::SameLine();
 
     // Play / pause button
@@ -192,7 +192,6 @@ void LinkedListScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
     else {
         if (ImGui::Button(u8"\uf04b", btnSize)) isPlaying = true;
     }
-
     ImGui::SameLine();
 
     // Step forward button
@@ -200,27 +199,46 @@ void LinkedListScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
         isPlaying = false;
         if (currentStep < totalSteps) currentStep++;
     }
-
     ImGui::SameLine();
 
+    // Skip to end button
     if (ImGui::Button(u8"\uf050", btnSize)) {
         isPlaying = false;
         currentStep = totalSteps;
     }
+
+    // Speed slider
+    ImGui::SameLine();
     ImGui::SetNextItemWidth(120.0f);
     ImGui::SliderFloat("Speed", &playbackSpeed, 0.5f, 3.0f, "%.1fx");
-	ImGui::Spacing(); ImGui::Spacing();
 
-    // Progress bar showing the current frame
-    ImGui::SetCursorPosX((canvasWidth - controlsWidth) * 0.5f);
-    ImGui::ProgressBar(totalSteps > 0 ? (float)currentStep / (float)totalSteps : 0.0f, ImVec2(controlsWidth, 30));
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    float progressBarWidth = 400.0f;
+    ImGui::SetCursorPosX((middleCanvasWidth - progressBarWidth) * 0.5f);
+
+    float progress = (totalSteps > 0) ? (float)currentStep / (float)totalSteps : 0.0f;
+
+    char progressText[32];
+    snprintf(progressText, sizeof(progressText), "%d%%", (int)(progress * 100));
+    ImGui::ProgressBar(progress, ImVec2(progressBarWidth, 30), progressText);
 
     ImGui::End();
     // Code highlight window
     if (linkedList.hasFrames()) {
-        ImGui::SetNextWindowPos(ImVec2(window.getSize().x - 350.0f, 10.0f), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(340.0f, 300.0f), ImGuiCond_Once);
+        ImGui::SetNextWindowSizeConstraints(
+            ImVec2(250.0f, 200.0f),                      // Minimum size
+            ImVec2(800.0f, window.getSize().y - 20.0f)   // Maximum size
+        );
+        // Dynamically position it based on its current width from the Theme
+        ImGui::SetNextWindowPos(ImVec2(window.getSize().x - Theme::CodePanelWidth - 10.0f, 10.0f), ImGuiCond_Always);
+
+        ImGui::SetNextWindowSize(ImVec2(Theme::CodePanelWidth, 300.0f), ImGuiCond_Once);
+
         ImGui::Begin("Execution Steps", nullptr, ImGuiWindowFlags_NoCollapse);
+
+        Theme::CodePanelWidth = ImGui::GetWindowWidth();
 
         const auto& frames = linkedList.getFrames();
         const auto& code = linkedList.getPseudoCode();

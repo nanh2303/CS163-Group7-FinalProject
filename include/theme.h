@@ -29,4 +29,5 @@ namespace Theme {
 
 // LAYOUT CONSTANT
     inline float ControlPanelWidth = 430.0f;  // Everyone's left-side UI panel must be exactly this wide
+	inline float CodePanelWidth = 340.0f;     // Right panel for highlighting code
 }
