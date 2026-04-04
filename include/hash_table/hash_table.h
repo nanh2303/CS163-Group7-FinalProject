@@ -13,9 +13,7 @@ private:
     Node** table;
     int capacity;
 
-    int getHash(int value) {
-        return value % capacity;
-    }
+    
 
 public:
     HashTable(int capacity);
@@ -23,4 +21,7 @@ public:
     void insert(int value);
     void remove(int value);
     bool search(int value);
+    int getHash(int value);
+    Node* getBucket(int index);
+    int getCapacity();
 };
