@@ -66,3 +66,39 @@ void DrawingUtils::drawArrow(sf::RenderWindow& window, sf::Vector2f start, sf::V
     arrowhead.setFillColor(color);
     window.draw(arrowhead);
 }
+
+void DrawingUtils::drawDirectedWeightedEdge(
+    sf::RenderWindow& window,
+    sf::Vector2f fromCenter,
+    sf::Vector2f toCenter,
+    const std::string& weightText,
+    sf::Color color,
+    bool highlight
+) {
+    sf::Vector2f dir = toCenter - fromCenter;
+    float lenSq = dir.x * dir.x + dir.y * dir.y;
+    if (lenSq < 1e-4f) {
+        return;
+    }
+    float len = std::sqrt(lenSq);
+    dir.x /= len;
+    dir.y /= len;
+
+    sf::Vector2f start = fromCenter + dir * Theme::NodeRadius;
+    sf::Vector2f end = toCenter - dir * Theme::NodeRadius;
+
+    sf::Color edgeColor = highlight ? Theme::NodeHighlight : color;
+    drawArrow(window, start, end, edgeColor);
+
+    if (weightText.empty()) {
+        return;
+    }
+
+    sf::Vector2f mid((start.x + end.x) * 0.5f, (start.y + end.y) * 0.5f);
+    sf::Text label(weightText, AssetManager::getInstance().getFont("main_font"), 14);
+    label.setFillColor(Theme::TextNormal);
+    sf::FloatRect bounds = label.getLocalBounds();
+    label.setOrigin(bounds.left + bounds.width * 0.5f, bounds.top + bounds.height * 0.5f);
+    label.setPosition(mid.x - dir.y * 10.0f, mid.y + dir.x * 10.0f);
+    window.draw(label);
+}

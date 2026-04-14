@@ -12,4 +12,14 @@ public:
 
     // Draws an arrow pointing from start to end
     static void drawArrow(sf::RenderWindow& window, sf::Vector2f start, sf::Vector2f end, sf::Color color);
+
+    // Directed edge between two circle centers (offsets by radius), optional weight label at midpoint
+    static void drawDirectedWeightedEdge(
+        sf::RenderWindow& window,
+        sf::Vector2f fromCenter,
+        sf::Vector2f toCenter,
+        const std::string& weightText,
+        sf::Color color,
+        bool highlight
+    );
 };
