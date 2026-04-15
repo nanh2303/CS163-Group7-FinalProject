@@ -5,6 +5,34 @@
 #include "assetManager.h"
 #include "drawingUtils.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#include <commdlg.h>
+#endif
+
+#ifdef _WIN32
+std::string openFileDialog() {
+    OPENFILENAMEA ofn;
+    CHAR szFile[260] = {0};
+    
+    ZeroMemory(&ofn, sizeof(OPENFILENAME));
+    ofn.lStructSize = sizeof(OPENFILENAME);
+    ofn.hwndOwner = NULL;
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = sizeof(szFile);
+    ofn.lpstrFilter = "Text Files\0*.txt\0All Files\0*.*\0"; // Only show .txt by default
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+    if (GetOpenFileNameA(&ofn) == TRUE) {
+        return std::string(ofn.lpstrFile);
+    }
+    return ""; // User canceled the dialog
+}
+#endif
 
 HashTableScreen::HashTableScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback) : onChangeScreen(std::move(changeScreenCallback)) {
     sf::Texture& bgTexture = AssetManager::getInstance().getTexture("main_bg");
@@ -64,10 +92,41 @@ void HashTableScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
         
         if (ImGui::Button("Empty Table", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             hashTable.initEmpty(tableCapacity);
-            currentStep = 0;
-            totalSteps = 0;
-            isPlaying = false;
+            isTableInitialized = true;
+            startAnimation();
         }
+
+        ImGui::Spacing();
+        
+        // --- NEW FILE INIT UI ---
+        ImGui::InputText("File Path", filePath, sizeof(filePath));
+        // Make the text box take up most of the space, leaving room for the Browse button
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 70.0f); 
+        ImGui::InputText("##filepath", filePath, sizeof(filePath)); 
+        
+        ImGui::SameLine();
+        
+        if (ImGui::Button("Browse", ImVec2(65.0f, 0))) {
+#ifdef _WIN32
+            std::string selectedFile = openFileDialog();
+            if (!selectedFile.empty()) {
+                // Safely copy the selected path into your ImGui input buffer
+                strncpy(filePath, selectedFile.c_str(), sizeof(filePath) - 1);
+                filePath[sizeof(filePath) - 1] = '\0'; // Ensure null-termination
+            }
+#else
+            // Fallback if someone compiles this on Mac/Linux
+            strncpy(filePath, "Not supported on this OS", sizeof(filePath));
+#endif
+        }
+        if (ImGui::Button("Init from File", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+            hashTable.initFromFile(filePath, tableCapacity);
+            isTableInitialized = true;
+            startAnimation();
+        }
+    }
+    if(!isTableInitialized) {
+        ImGui::BeginDisabled();
     }
 
     // Insertion
@@ -79,11 +138,12 @@ void HashTableScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
         }
     }
 
+
     // Deletion
     if (ImGui::CollapsingHeader("Delete", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::InputInt("Delete value", &deleteValue);
         if (ImGui::Button("Remove Value", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
-            // hashTable.deleteValue(deleteValue); // Uncomment once implemented in core
+            hashTable.deleteValue(deleteValue);
             startAnimation();
         }
     }
@@ -92,9 +152,24 @@ void HashTableScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
     if (ImGui::CollapsingHeader("Search", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::InputInt("Search value", &searchValue);
         if (ImGui::Button("Find Value", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
-            // hashTable.searchValue(searchVal); // Uncomment once implemented in core
+            hashTable.searchValue(searchValue);
             startAnimation();
         }
+    }
+
+    // Update
+    if (ImGui::CollapsingHeader("Update", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::InputInt("Old value", &updateOldValue);
+        ImGui::InputInt("New value", &updateNewValue);
+        
+        if (ImGui::Button("Update Value", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+            hashTable.updateValue(updateOldValue, updateNewValue);
+            startAnimation();
+        }
+    }
+
+    if(!isTableInitialized) {
+        ImGui::EndDisabled();
     }
 
     ImGui::Spacing();

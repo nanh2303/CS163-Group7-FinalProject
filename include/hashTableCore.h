@@ -31,10 +31,11 @@ public:
     void clear();
 
     void initEmpty(int capacity);
-    void initRandom(int capacity);
+    void initFromFile(const std::string& filename, int capacity);
     void insertValue(int value);
     void deleteValue(int value);
-    bool searchValue(int value);
+    void searchValue(int value);
+    void updateValue(int oldValue, int newValue);
 
     const std::vector<HashAnimationState>& getFrames() const {
         return animationFrames;
