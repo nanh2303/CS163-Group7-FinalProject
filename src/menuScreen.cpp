@@ -3,6 +3,7 @@
 #include "theme.h"
 #include "imgui.h"
 #include "linkedListScreen.h"
+#include "hashTableScreen.h"
 #include <algorithm>
 
 MenuScreen::MenuScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback)
@@ -75,7 +76,9 @@ void MenuScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
 
     ImGui::SetCursorPos(ImVec2(buttonStartX, currentY));
 	// Hash table button here
-    if (ImGui::Button("Hash Table Chaining", buttonSize)) {}
+    if (ImGui::Button("Hash Table Chaining", buttonSize)) {
+        onChangeScreen(std::make_unique<HashTableScreen>(onChangeScreen));
+    }
     ImGui::PopStyleColor(4);
     currentY += buttonSize.y + spacingY;
 
