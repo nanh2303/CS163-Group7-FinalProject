@@ -84,7 +84,6 @@ void HashTableScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
     ImGui::Spacing();
 
     ImGui::Text("Data operations:");
-    
     // Initialization
     if (ImGui::CollapsingHeader("Initialize", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::InputInt("Capacity", &tableCapacity);
@@ -101,25 +100,25 @@ void HashTableScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
         // --- NEW FILE INIT UI ---
         ImGui::InputText("File Path", filePath, sizeof(filePath));
         // Make the text box take up most of the space, leaving room for the Browse button
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 70.0f); 
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 90.0f); 
         ImGui::InputText("##filepath", filePath, sizeof(filePath)); 
         
         ImGui::SameLine();
         
-        if (ImGui::Button("Browse", ImVec2(65.0f, 0))) {
-#ifdef _WIN32
+        if (ImGui::Button("Browse", ImVec2(85.0f, 0))) {
+        #ifdef _WIN32
             std::string selectedFile = openFileDialog();
             if (!selectedFile.empty()) {
                 // Safely copy the selected path into your ImGui input buffer
                 strncpy(filePath, selectedFile.c_str(), sizeof(filePath) - 1);
                 filePath[sizeof(filePath) - 1] = '\0'; // Ensure null-termination
             }
-#else
+        #else
             // Fallback if someone compiles this on Mac/Linux
             strncpy(filePath, "Not supported on this OS", sizeof(filePath));
-#endif
+        #endif
         }
-        if (ImGui::Button("Init from File", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+        if (ImGui::Button("Initialize from File", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             hashTable.initFromFile(filePath, tableCapacity);
             isTableInitialized = true;
             startAnimation();
