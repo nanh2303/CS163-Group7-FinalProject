@@ -2,6 +2,8 @@
 #include <iostream>
 #include <algorithm>
 #include <functional>
+#include <random>
+#include <fstream>
 using namespace std;
 
 using node = AVLTree::node;
@@ -44,6 +46,96 @@ void AVLTree::updateHeight(node root) {
     if (root != nullptr) {
         root->height = 1 + std::max(getHeight(root->left), getHeight(root->right));
     }
+}
+
+bool AVLTree::loadFromFile(const char* inputFile) {
+    initFromFile(inputFile);
+    return true;
+}
+
+bool AVLTree::saveInOrderToFile(const char* outputFile) {
+    std::ofstream fout(outputFile);
+    if (!fout.is_open()) return false;
+    inOrder(root, fout);
+    return true;
+}
+
+bool AVLTree::hasFrames() const {
+    return !animationFrames.empty();
+}
+
+const AVLTree::Node* AVLTree::getRoot() const {
+    return root;
+}
+
+void AVLTree::initEmpty() {
+    clear();
+    animationFrames.clear();
+}
+
+void AVLTree::initRandom(int n) {
+    clear();
+    animationFrames.clear();
+
+    std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<int> dist(1, 100);
+
+    for (int i = 0; i < n; ++i) {
+        insert(dist(rng));
+    }
+}
+
+void AVLTree::initFromFile(const std::string& path) {
+    clear();
+    animationFrames.clear();
+
+    std::ifstream file(path);
+    if (!file.is_open()) return;
+
+    int x;
+    while (file >> x) {
+        insert(x);
+    }
+
+    file.close();
+}
+
+void AVLTree::search(int key) {
+    animationFrames.clear();
+
+    currentPseudoCode = {
+        "node cur = root;",
+        "while (cur != nullptr)",
+        "  if (key == cur->data) return FOUND;",
+        "  else if (key < cur->data) go left;",
+        "  else go right;",
+        "return NOT FOUND;"
+    };
+
+    node cur = root;
+
+    while (cur != nullptr) {
+        recordState(1, "Visit " + std::to_string(cur->data), cur);
+
+        if (key == cur->data) {
+            recordState(2, "Found " + std::to_string(key), cur);
+            return;
+        }
+        else if (key < cur->data) {
+            recordState(3, "Go LEFT", cur);
+            cur = cur->left;
+        }
+        else {
+            recordState(4, "Go RIGHT", cur);
+            cur = cur->right;
+        }
+    }
+
+    recordState(5, "Not found " + std::to_string(key));
+}
+
+const AVLTree::Node* AVLTree::getRoot() const {
+    return root;
 }
 
 node AVLTree::rightRotate(node y) {

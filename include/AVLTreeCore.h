@@ -6,7 +6,7 @@
 #include <string>
 
 class AVLTree {
-private:
+public:
     // ================= NODE =================
     struct Node {
         int data;
@@ -22,7 +22,6 @@ private:
         }
     };
 
-public:
     using node = Node*;
 
     node root;
@@ -76,11 +75,18 @@ public:
     void remove(int key);
     void clear();
 
+    void initEmpty();
+    void initRandom(int n);
+    void initFromFile(const std::string& path);
+    void search(int key);
+    const Node* getRoot() const;
+
     bool loadFromFile(const char* inputFile);
     bool saveInOrderToFile(const char* outputFile);
 
     const std::vector<AnimationState>& getAnimation() const;
     const std::vector<std::string>& getPseudoCode() const;
+    bool hasFrames() const;
 };
 
 #endif
