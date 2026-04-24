@@ -42,6 +42,10 @@ int AVLTree::getBalance(node root) {
     return (root == nullptr) ? 0 : getHeight(root->left) - getHeight(root->right);
 }
 
+void AVLTree::clearAnimation() {
+    animationFrames.clear();
+}
+
 void AVLTree::updateHeight(node root) {
     if (root != nullptr) {
         root->height = 1 + std::max(getHeight(root->left), getHeight(root->right));
@@ -62,10 +66,6 @@ bool AVLTree::saveInOrderToFile(const char* outputFile) {
 
 bool AVLTree::hasFrames() const {
     return !animationFrames.empty();
-}
-
-const AVLTree::Node* AVLTree::getRoot() const {
-    return root;
 }
 
 void AVLTree::initEmpty() {
@@ -199,8 +199,15 @@ node AVLTree::leftRotate(node x) {
 }
 
 void AVLTree::insert(int key) {
-    animationFrames.clear();
     root = insertNode(root, key);
+}
+
+void AVLTree::inOrder(node root, std::ofstream& fout) {
+    if (root == nullptr) return;
+
+    inOrder(root->left, fout);
+    fout << root->data << " ";
+    inOrder(root->right, fout);
 }
 
 node AVLTree::insertNode(node root, int key) {
@@ -404,23 +411,40 @@ void AVLTree::recordState(
     frame.activeLineOfCode = lineOfCode;
     frame.explanation = message;
 
-    std::function<void(node)> dfs = [&](node cur) {
+    std::vector<node> nodesList;
+
+    node start = highlightedNode ? highlightedNode : root;
+
+    std::function<void(node)> collect = [&](node cur) {
         if (!cur) return;
+        nodesList.push_back(cur);
+        collect(cur->left);
+        collect(cur->right);
+    };
+
+    collect(start);
+
+    for (size_t i = 0; i < nodesList.size(); ++i) {
+        node cur = nodesList[i];
 
         NodeState s;
         s.data = cur->data;
         s.height = cur->height;
+
+        s.left = -1;
+        s.right = -1;
+
+        for (size_t j = 0; j < nodesList.size(); ++j) {
+            if (nodesList[j] == cur->left)  s.left = (int)j;
+            if (nodesList[j] == cur->right) s.right = (int)j;
+        }
+
         s.isHighlighted = (cur == highlightedNode);
         s.isRotating = (cur == targetNode);
         s.isDeleting = (cur == deleteNode);
 
         frame.nodes.push_back(s);
-
-        dfs(cur->left);
-        dfs(cur->right);
-    };
-
-    dfs(root);
+    }
 
     animationFrames.push_back(frame);
 }

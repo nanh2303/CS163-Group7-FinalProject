@@ -30,6 +30,9 @@ public:
     struct NodeState {
         int data;
         int height;
+        int left = -1;
+        int right = -1;
+        bool isRoot = false;
         bool isHighlighted = false;
         bool isRotating = false;
         bool isDeleting = false;
@@ -87,6 +90,8 @@ public:
     const std::vector<AnimationState>& getAnimation() const;
     const std::vector<std::string>& getPseudoCode() const;
     bool hasFrames() const;
+
+    void clearAnimation();
 };
 
 #endif

@@ -29,8 +29,9 @@ private:
 
     void startAnimation();
 
-    void drawNode(sf::RenderWindow& window, const AVLTree::Node* node, float x, float y, float offset);
-
+    void drawFromFrame(sf::RenderWindow& window,
+    const std::vector<AVLTree::NodeState>& nodes,
+    int idx, float x, float y, float offset);
 public:
     AVLTreeScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback);
 

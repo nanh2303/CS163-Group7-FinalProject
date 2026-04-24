@@ -3,6 +3,7 @@
 #include "theme.h"
 #include "imgui.h"
 #include "linkedListScreen.h"
+#include "AVLTreeScreen.h"
 #include <algorithm>
 
 MenuScreen::MenuScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback)
@@ -86,7 +87,9 @@ void MenuScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
 
     ImGui::SetCursorPos(ImVec2(buttonStartX, currentY));
 	// AVL tree button here
-    if (ImGui::Button("AVL Tree", buttonSize)) {}
+    if (ImGui::Button("AVL Tree", buttonSize)) {
+        onChangeScreen(std::make_unique<AVLTreeScreen>(onChangeScreen));
+    }
     ImGui::PopStyleColor(4);
     currentY += buttonSize.y + spacingY;
 
