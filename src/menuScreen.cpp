@@ -4,6 +4,8 @@
 #include "imgui.h"
 #include "graphScreen.h"
 #include "linkedListScreen.h"
+#include "AVLTreeScreen.h"
+#include "hashTableScreen.h"
 #include <algorithm>
 
 MenuScreen::MenuScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback)
@@ -76,7 +78,9 @@ void MenuScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
 
     ImGui::SetCursorPos(ImVec2(buttonStartX, currentY));
 	// Hash table button here
-    if (ImGui::Button("Hash Table Chaining", buttonSize)) {}
+    if (ImGui::Button("Hash Table Chaining", buttonSize)) {
+        onChangeScreen(std::make_unique<HashTableScreen>(onChangeScreen));
+    }
     ImGui::PopStyleColor(4);
     currentY += buttonSize.y + spacingY;
 
@@ -87,7 +91,9 @@ void MenuScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
 
     ImGui::SetCursorPos(ImVec2(buttonStartX, currentY));
 	// AVL tree button here
-    if (ImGui::Button("AVL Tree", buttonSize)) {}
+    if (ImGui::Button("AVL Tree", buttonSize)) {
+        onChangeScreen(std::make_unique<AVLTreeScreen>(onChangeScreen));
+    }
     ImGui::PopStyleColor(4);
     currentY += buttonSize.y + spacingY;
 
