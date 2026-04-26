@@ -4,7 +4,12 @@
 #include "imgui.h"
 #include "assetManager.h"
 #include "drawingUtils.h"
+#include "fileDialog.h"
 #include <iostream>
+
+/*
+Common openFileDialog
+*/
 
 AVLTreeScreen::AVLTreeScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback)
     : onChangeScreen(std::move(changeScreenCallback)) {
@@ -135,8 +140,20 @@ void AVLTreeScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
         //Input From file
         ImGui::Spacing();
 
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        ImGui::InputText("File Path", filepathBuffer, IM_ARRAYSIZE(filepathBuffer));
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 90.0f);
+        ImGui::InputText("##filepath", filepathBuffer, IM_ARRAYSIZE(filepathBuffer));
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Browse", ImVec2(85.0f, 0))) {
+        #ifdef _WIN32
+            std::string selectedFile = openFileDialog();
+            if (!selectedFile.empty()) {
+                strncpy(filepathBuffer, selectedFile.c_str(), sizeof(filepathBuffer) - 1);
+                filepathBuffer[sizeof(filepathBuffer) - 1] = '\0';
+            }
+        #endif
+        }
 
         if (ImGui::Button("Load from file", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             if (strlen(filepathBuffer) == 0) {
