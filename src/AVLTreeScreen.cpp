@@ -4,6 +4,7 @@
 #include "imgui.h"
 #include "assetManager.h"
 #include "drawingUtils.h"
+#include <iostream>
 
 AVLTreeScreen::AVLTreeScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback)
     : onChangeScreen(std::move(changeScreenCallback)) {
@@ -20,19 +21,58 @@ AVLTreeScreen::AVLTreeScreen(std::function<void(std::unique_ptr<Screen>)> change
 }
 
 void AVLTreeScreen::startAnimation() {
-    if (avlTree.hasFrames()) {
-        totalSteps = avlTree.getAnimation().size() - 1;
-        currentStep = 0;
-        isPlaying = true;
-        timer = 0.0f;
+    const auto& frames = avlTree.getAnimation();
+
+    currentStep = 0;
+    totalSteps = 0;
+    isPlaying = false;
+    elapsed = 0.0f;
+
+    if (frames.empty()) {
+        return;
     }
+
+    totalSteps = (int)frames.size() - 1;
+
+    if (totalSteps < 0) totalSteps = 0;
+
+    currentStep = 0;
+    isPlaying = true;
+    elapsed = 0.0f;
+}
+
+float AVLTreeScreen::ease(float t) {
+    return t * t * (3.0f - 2.0f * t); // smoothstep
+}
+
+AVLTree::NodeState AVLTreeScreen::lerpNode(
+    const AVLTree::NodeState& a,
+    const AVLTree::NodeState& b,
+    float t
+) {
+    AVLTree::NodeState r = a;
+
+    r.x = a.x + (b.x - a.x) * t;
+    r.y = a.y + (b.y - a.y) * t;
+
+    r.data = b.data;
+    r.left = b.left;
+    r.right = b.right;
+
+    r.isHighlighted = b.isHighlighted;
+    r.isRotating = b.isRotating;
+    r.isDeleting = b.isDeleting;
+
+    return r;
 }
 
 void AVLTreeScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
-    if (isPlaying && totalSteps > 0) {
-        timer += deltaTime.asSeconds() * playbackSpeed;
-        if (timer >= 0.3f) {
-            timer = 0.0f;
+    if (isPlaying && totalSteps >= 0) {
+        elapsed += deltaTime.asSeconds() * playbackSpeed;
+
+        if (elapsed >= transitionTime) {
+            elapsed = 0.0f;
+
             if (currentStep < totalSteps) currentStep++;
             else isPlaying = false;
         }
@@ -82,7 +122,14 @@ void AVLTreeScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
         ImGui::InputInt("Random count", &randomCount);
         if (ImGui::Button("Generate random", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             avlTree.initRandom(randomCount);
-            startAnimation();
+            
+            const auto& frames = avlTree.getAnimation();
+            if (!frames.empty()) {
+                currentStep = 0;
+                totalSteps = (int)frames.size() - 1;
+                elapsed = 0.0f;
+                isPlaying = true;
+            }
         }
 
         ImGui::Spacing();
@@ -96,7 +143,7 @@ void AVLTreeScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
     // Insertion
     if (ImGui::CollapsingHeader("Add", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::InputInt("Insert value", &inputValue);
-        if (ImGui::Button("Insert", ImVec2(140, 0))) {
+        if (ImGui::Button("Insert##btn_insert", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             avlTree.clearAnimation();
             avlTree.insert(inputValue);
             startAnimation();
@@ -106,7 +153,8 @@ void AVLTreeScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
     // Deletion
     if (ImGui::CollapsingHeader("Delete", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::InputInt("Delete value", &deleteValue);
-        if (ImGui::Button("Delete", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+        if (ImGui::Button("Delete##btn_delete", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+            avlTree.clearAnimation();
             avlTree.remove(deleteValue);
             startAnimation();
         }
@@ -115,8 +163,24 @@ void AVLTreeScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
     // Search
     if (ImGui::CollapsingHeader("Search", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::InputInt("Search value", &searchVal);
-        if (ImGui::Button("Search", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+        if (ImGui::Button("Search##btn_search", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+            avlTree.clearAnimation();
             avlTree.search(searchVal);
+            startAnimation();
+        }
+    }
+
+    // UPDATE
+    if (ImGui::CollapsingHeader("Update", ImGuiTreeNodeFlags_DefaultOpen)) {
+        static int oldValue = 0;
+        static int newValue = 0;
+
+        ImGui::InputInt("Old value", &oldValue);
+        ImGui::InputInt("New value", &newValue);
+
+        if (ImGui::Button("Update##btn_update", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+            avlTree.clearAnimation();
+            avlTree.update(oldValue, newValue);
             startAnimation();
         }
     }
@@ -154,7 +218,10 @@ void AVLTreeScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
     ImGui::SetNextWindowPos(ImVec2(Theme::ControlPanelWidth, window.getSize().y - bottomBarHeight));
     ImGui::SetNextWindowSize(ImVec2(middleCanvasWidth, bottomBarHeight));
 
-    ImGui::Begin("Playback controls", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground);
+    ImGui::Begin("Playback controls", nullptr, 
+        ImGuiWindowFlags_NoDecoration | 
+        ImGuiWindowFlags_NoMove
+    );
 
     ImVec2 btnSize(45, 30);
 
@@ -226,7 +293,10 @@ void AVLTreeScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
         Theme::CodePanelWidth = ImGui::GetWindowWidth();
 
         const auto& frames = avlTree.getAnimation();
-        if (frames.empty()) return;
+        if (frames.empty()) {
+            ImGui::End();
+            return;
+        }
 
         int idx = std::min(currentStep, (int)frames.size() - 1);
         int activeLine = frames[idx].activeLineOfCode;
@@ -237,7 +307,7 @@ void AVLTreeScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
 
         const auto& code = avlTree.getPseudoCode();
         for (size_t i = 0; i < code.size(); ++i) {
-            if (i == activeLine) {
+            if ((int)i == activeLine) {
                 // Highlight the active line in yellow
                 ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", code[i].c_str());
             }
@@ -255,44 +325,106 @@ void AVLTreeScreen::render(sf::RenderWindow& window) {
     const auto& frames = avlTree.getAnimation();
     if (frames.empty()) return;
 
-    int idx = std::min(currentStep, (int)frames.size() - 1);
-    const auto& frame = frames[idx];
+    int maxIdx = (int)frames.size() - 1;
+    int j = std::clamp(currentStep, 0, maxIdx);
 
-    float startX = (window.getSize().x + Theme::ControlPanelWidth) / 2.0f;
-    float startY = 150.0f;
-    float offset = window.getSize().x / 4.0f;
+    const auto& B = frames[j];
+    std::vector<AVLTree::NodeState> interpolated = B.nodes;
 
-    drawFromFrame(window, frame.nodes, 0, startX, startY, offset);
+    if (interpolated.empty()) return;
+
+    float leftBound = Theme::ControlPanelWidth;
+    float rightBound = window.getSize().x - Theme::CodePanelWidth;
+
+    float centerX = (leftBound + rightBound) / 2.0f;
+    float startY = 120.0f;
+    float offset = (rightBound - leftBound) / 4.0f;
+
+    std::function<void(int, float, float, float)> layout =
+        [&](int idx, float x, float y, float offset) {
+
+        if (idx < 0 || idx >= (int)interpolated.size()) return;
+
+        interpolated[idx].x = x;
+        interpolated[idx].y = y;
+
+        int l = interpolated[idx].left;
+        int r = interpolated[idx].right;
+
+        if (l >= 0) layout(l, x - offset, y + 100, offset / 2);
+        if (r >= 0) layout(r, x + offset, y + 100, offset / 2);
+    };
+
+    int rootIdx = B.rootIndex;
+
+    if (rootIdx < 0 || rootIdx >= (int)interpolated.size()) {
+        std::vector<bool> hasParent(interpolated.size(), false);
+
+        for (auto& n : interpolated) {
+            if (n.left != -1) hasParent[n.left] = true;
+            if (n.right != -1) hasParent[n.right] = true;
+        }
+
+        for (int i = 0; i < (int)interpolated.size(); i++) {
+            if (!hasParent[i]) {
+                rootIdx = i;
+                break;
+            }
+        }
+    }
+
+    if (rootIdx < 0 || rootIdx >= (int)interpolated.size()) {
+        rootIdx = 0;
+    }
+
+    layout(rootIdx, centerX, startY, offset);
+    drawFromFrame(window, interpolated, rootIdx, 0, 0, 0);
 }
 
 void AVLTreeScreen::drawFromFrame(sf::RenderWindow& window,
     const std::vector<AVLTree::NodeState>& nodes,
-    int idx, float x, float y, float offset) {
+    int idx, float, float, float) {
 
     if (idx < 0 || idx >= (int)nodes.size()) return;
 
     const auto& node = nodes[idx];
-
-    if (offset < 30) offset = 30;
-
     sf::Color color = Theme::NodeDefault;
-    if (node.isHighlighted) color = sf::Color::Yellow;
+
+    if (node.isFound) color = sf::Color::Green;  
+    else if (node.isHighlighted) color = sf::Color::Yellow;
     else if (node.isRotating) color = sf::Color::Red;
     else if (node.isDeleting) color = sf::Color::Magenta;
 
-    DrawingUtils::drawRectNode(window, {x, y}, std::to_string(node.data), color);
+    DrawingUtils::drawRectNode(
+        window,
+        { node.x, node.y },
+        std::to_string(node.data),
+        color
+    );
 
-    if (node.left != -1) {
-        float childX = x - offset;
-        float childY = y + 100;
-        DrawingUtils::drawArrow(window, {x, y + Theme::NodeHeight / 2}, {childX, childY - Theme::NodeHeight / 2}, Theme::LinkDefault);
-        drawFromFrame(window, nodes, node.left, childX, childY, offset / 2);
+    //  LEFT
+    if (node.left >= 0 && node.left < (int)nodes.size()) {
+        const auto& leftNode = nodes[node.left];
+
+        DrawingUtils::drawArrow(window,
+            { node.x, node.y + Theme::NodeHeight / 2 },
+            { leftNode.x, leftNode.y - Theme::NodeHeight / 2 },
+            Theme::LinkDefault
+        );
+
+        drawFromFrame(window, nodes, node.left, 0, 0, 0);
     }
 
-    if (node.right != -1) {
-        float childX = x + offset;
-        float childY = y + 100;
-        DrawingUtils::drawArrow(window, {x, y + Theme::NodeHeight / 2}, {childX, childY - Theme::NodeHeight / 2}, Theme::LinkDefault);
-        drawFromFrame(window, nodes, node.right, childX, childY, offset / 2);
+    //  RIGHT
+    if (node.right >= 0 && node.right < (int)nodes.size()) {
+        const auto& rightNode = nodes[node.right];
+
+        DrawingUtils::drawArrow(window,
+            { node.x, node.y + Theme::NodeHeight / 2 },
+            { rightNode.x, rightNode.y - Theme::NodeHeight / 2 },
+            Theme::LinkDefault
+        );
+
+        drawFromFrame(window, nodes, node.right, 0, 0, 0);
     }
 }

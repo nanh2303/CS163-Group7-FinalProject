@@ -30,18 +30,26 @@ public:
     struct NodeState {
         int data;
         int height;
+
         int left = -1;
         int right = -1;
+
+        float x = 0;
+        float y = 0;
+
         bool isRoot = false;
         bool isHighlighted = false;
         bool isRotating = false;
         bool isDeleting = false;
+        bool isFound = false;
     };
 
     struct AnimationState {
         std::vector<NodeState> nodes;
-        int activeLineOfCode;
+        int activeLineOfCode = -1;
         std::string explanation;
+
+        int rootIndex;
     };
 
     std::vector<AnimationState> animationFrames;
@@ -77,6 +85,7 @@ public:
     void insert(int key);
     void remove(int key);
     void clear();
+    void update(int oldVal, int newVal) ;
 
     void initEmpty();
     void initRandom(int n);

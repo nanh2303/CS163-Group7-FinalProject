@@ -20,18 +20,35 @@ private:
 
     sf::Sprite backgroundSprite;
 
-    // Playback state variables
+    // ================= PLAYBACK =================
     bool isPlaying = false;
     int currentStep = 0;
     int totalSteps = 0;
+
     float playbackSpeed = 1.0f;
-    float timer = 0.0f;
+
+    float transitionTime = 0.4f;
+    float elapsed = 0.0f;
 
     void startAnimation();
 
-    void drawFromFrame(sf::RenderWindow& window,
-    const std::vector<AVLTree::NodeState>& nodes,
-    int idx, float x, float y, float offset);
+    // ================= ANIMATION ENGINE =================
+
+    float ease(float t);
+
+    AVLTree::NodeState lerpNode(
+        const AVLTree::NodeState& a,
+        const AVLTree::NodeState& b,
+        float t
+    );
+
+    void drawFromFrame(
+        sf::RenderWindow& window,
+        const std::vector<AVLTree::NodeState>& nodes,
+        int idx,
+        float x, float y, float offset
+    );
+
 public:
     AVLTreeScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback);
 

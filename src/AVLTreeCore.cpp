@@ -21,11 +21,6 @@ void AVLTree::clear() {
     root = nullptr;
 }
 
-void AVLTree::remove(int key) {
-    animationFrames.clear();
-    root = deleteNode(root, key);
-}
-
 const std::vector<AVLTree::AnimationState>& AVLTree::getAnimation() const {
     return animationFrames;
 }
@@ -101,7 +96,9 @@ void AVLTree::initFromFile(const std::string& path) {
 }
 
 void AVLTree::search(int key) {
-    animationFrames.clear();
+    clearAnimation();
+
+    node cur = root;
 
     currentPseudoCode = {
         "node cur = root;",
@@ -112,26 +109,27 @@ void AVLTree::search(int key) {
         "return NOT FOUND;"
     };
 
-    node cur = root;
+    recordState(0, "Start search " + std::to_string(key), cur);
 
     while (cur != nullptr) {
-        recordState(1, "Visit " + std::to_string(cur->data), cur);
+        recordState(1, "Comparing " + std::to_string(key) + " with " + std::to_string(cur->data), cur);
 
         if (key == cur->data) {
-            recordState(2, "Found " + std::to_string(key), cur);
-            return;
+            recordState(2, "Found " + std::to_string(key) + "!", cur);
+            recordState(-1, "Search complete", cur);
+             recordState(-1, "Final state", root);
+             return;
         }
-        else if (key < cur->data) {
-            recordState(3, "Go LEFT", cur);
-            cur = cur->left;
-        }
-        else {
-            recordState(4, "Go RIGHT", cur);
-            cur = cur->right;
-        }
+        
+        cur = (key < cur->data) ? cur->left : cur->right;
+
+        if (cur)
+            recordState(1, "Move", cur);
     }
 
-    recordState(5, "Not found " + std::to_string(key));
+    recordState(3, "Not found", nullptr);
+    recordState(-1, "Search complete");
+    recordState(-1, "Final state", root);
 }
 
 const AVLTree::Node* AVLTree::getRoot() const {
@@ -199,7 +197,10 @@ node AVLTree::leftRotate(node x) {
 }
 
 void AVLTree::insert(int key) {
+    clearAnimation();
+    recordState(-1, "Start");
     root = insertNode(root, key);
+    recordState(-1, "Inserted " + std::to_string(key));
 }
 
 void AVLTree::inOrder(node root, std::ofstream& fout) {
@@ -225,61 +226,55 @@ node AVLTree::insertNode(node root, int key) {
     // CREATE NODE
     if (root == nullptr) {
         node newNode = new Node(key);
-        recordState(0, "Create node " + std::to_string(key), nullptr, newNode);
-        recordState(-1, "Insertion complete", newNode);
+        recordState(0, "Create " + std::to_string(key), newNode);
         return newNode;
     }
 
-    recordState(1, "Compare with " + std::to_string(root->data), root);
+    recordState(1, "At " + std::to_string(root->data), root);
 
-    // LEFT
     if (key < root->data) {
-        recordState(2, "Go LEFT", root);
         root->left = insertNode(root->left, key);
     }
-
-    //  RIGHT
     else if (key > root->data) {
-        recordState(3, "Go RIGHT", root);
         root->right = insertNode(root->right, key);
     }
-
     else return root;
 
-    // UPDATE HEIGHT
     updateHeight(root);
-    recordState(5, "Update height", root);
 
     int balance = getBalance(root);
-    recordState(6, "Balance = " + std::to_string(balance), root);
 
-    //  LL
-    if (balance > 1 && key < root->left->data) {
-        recordState(7, "LL case (Right Rotate)", root);
+    // LL
+    if (balance > 1 && getBalance(root->left) >= 0)
         return rightRotate(root);
-    }
 
-    //  RR
-    if (balance < -1 && key > root->right->data) {
-        recordState(7, "RR case (Left Rotate)", root);
-        return leftRotate(root);
-    }
-
-    //  LR
-    if (balance > 1 && key > root->left->data) {
-        recordState(7, "LR case", root);
+    // LR
+    if (balance > 1 && getBalance(root->left) < 0) {
         root->left = leftRotate(root->left);
         return rightRotate(root);
     }
 
-    //  RL
-    if (balance < -1 && key < root->right->data) {
-        recordState(7, "RL case", root);
+    // RR
+    if (balance < -1 && getBalance(root->right) <= 0)
+        return leftRotate(root);
+
+    // RL
+    if (balance < -1 && getBalance(root->right) > 0) {
         root->right = rightRotate(root->right);
         return leftRotate(root);
     }
 
     return root;
+}
+
+void AVLTree::remove(int key) {
+    clearAnimation();
+    recordState(-1, "Start delete " + std::to_string(key));
+    root = deleteNode(root, key);
+    
+    recordState(-1, "Deleted " + std::to_string(key));
+
+    recordState(-1, "Final state", root);
 }
 
 void AVLTree::deleteTree(node root) {
@@ -301,9 +296,9 @@ node AVLTree::deleteNode(node root, int key) {
     currentPseudoCode = {
         "if (root == nullptr) return root;",         //0
         "if (key < root->data)",                     //1
-        "    root->left = deleteNode(root->left);",  //2
+        "    root->left = deleteNode(root->left, key);",  //2
         "else if (key > root->data)",                //3
-        "    root->right = deleteNode(root->right);",//4
+        "    root->right = deleteNode(root->right, key);",//4
         "else delete this node",                     //5
         "updateHeight(root);",                       //6
         "balance = getBalance(root);",               //7
@@ -400,6 +395,56 @@ node AVLTree::deleteNode(node root, int key) {
     return root;
 }
 
+//UPDATE = REMOVE + INSERT
+void AVLTree::update(int oldVal, int newVal) {
+    clearAnimation();
+
+    currentPseudoCode = {
+        "if oldVal not found → stop",
+        "if newVal already exists → stop",
+        "delete oldVal",
+        "insert newVal"
+    };
+
+    node cur = root;
+    bool foundOld = false;
+
+    while (cur) {
+        recordState(0, "Searching for " + std::to_string(oldVal), cur);
+
+        if (cur->data == oldVal) {
+            foundOld = true;
+            break;
+        }
+        cur = (oldVal < cur->data) ? cur->left : cur->right;
+    }
+
+    if (!foundOld) {
+        recordState(0, "Value " + std::to_string(oldVal) + " not found → cancel update", nullptr);
+        recordState(-1, "Update failed");
+        return;
+    }
+
+    cur = root;
+    while (cur) {
+        recordState(1, "Checking duplicate " + std::to_string(newVal), cur);
+
+        if (cur->data == newVal) {
+            recordState(1, "Value " + std::to_string(newVal) + " already exists → cancel", cur);
+            recordState(-1, "Update failed");
+            return;
+        }
+        cur = (newVal < cur->data) ? cur->left : cur->right;
+    }
+    recordState(2, "Deleting " + std::to_string(oldVal), root);
+    root = deleteNode(root, oldVal);
+
+    recordState(3, "Inserting " + std::to_string(newVal), root);
+    root = insertNode(root, newVal);
+
+    recordState(-1, "Update complete", root);
+}
+
 void AVLTree::recordState(
     int lineOfCode,
     const std::string& message,
@@ -413,8 +458,6 @@ void AVLTree::recordState(
 
     std::vector<node> nodesList;
 
-    node start = highlightedNode ? highlightedNode : root;
-
     std::function<void(node)> collect = [&](node cur) {
         if (!cur) return;
         nodesList.push_back(cur);
@@ -422,26 +465,34 @@ void AVLTree::recordState(
         collect(cur->right);
     };
 
-    collect(start);
+    collect(this->root);
 
-    for (size_t i = 0; i < nodesList.size(); ++i) {
-        node cur = nodesList[i];
+    if (this->root == nullptr && highlightedNode != nullptr) {
+        nodesList.push_back(highlightedNode);
+    }
 
+    std::unordered_map<node, int> id;
+    for (int i = 0; i < (int)nodesList.size(); i++)
+        id[nodesList[i]] = i;
+    
+    frame.rootIndex = (this->root && id.count(this->root)) ? id[this->root] : 
+                      (!nodesList.empty() ? 0 : -1);
+
+    for (auto cur : nodesList) {
         NodeState s;
         s.data = cur->data;
         s.height = cur->height;
 
-        s.left = -1;
-        s.right = -1;
-
-        for (size_t j = 0; j < nodesList.size(); ++j) {
-            if (nodesList[j] == cur->left)  s.left = (int)j;
-            if (nodesList[j] == cur->right) s.right = (int)j;
-        }
+        s.left = (cur->left && id.count(cur->left)) ? id[cur->left] : -1;
+        s.right = (cur->right && id.count(cur->right)) ? id[cur->right] : -1;
 
         s.isHighlighted = (cur == highlightedNode);
         s.isRotating = (cur == targetNode);
         s.isDeleting = (cur == deleteNode);
+        s.isFound = (cur == highlightedNode && lineOfCode == 2);
+
+        s.x = 0;
+        s.y = 0;
 
         frame.nodes.push_back(s);
     }
