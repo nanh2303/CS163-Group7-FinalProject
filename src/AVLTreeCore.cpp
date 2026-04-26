@@ -81,18 +81,39 @@ void AVLTree::initRandom(int n) {
 }
 
 void AVLTree::initFromFile(const std::string& path) {
-    clear();
-    animationFrames.clear();
+    initEmpty();
+    clearAnimation();
 
-    std::ifstream file(path);
-    if (!file.is_open()) return;
+    currentPseudoCode = {
+        "open file;",
+        "while(read x) insert(x);"
+    };
 
-    int x;
-    while (file >> x) {
-        insert(x);
+    FILE* f = fopen(path.c_str(), "r");
+
+    // fallback build/
+    if (!f) {
+        std::string alt = "build/" + path;
+        f = fopen(alt.c_str(), "r");
     }
 
-    file.close();
+    if (!f) {
+        recordState(-1, "Error: Cannot open file '" + path + "'");
+        return;
+    }
+
+    int x;
+    int count = 0;
+
+    while (fscanf(f, "%d", &x) == 1) {
+        insert(x);
+        count++;
+    }
+
+    fclose(f);
+
+    clearAnimation();
+    recordState(1, "Loaded " + std::to_string(count) + " values from file");
 }
 
 void AVLTree::search(int key) {

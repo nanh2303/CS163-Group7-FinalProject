@@ -132,11 +132,19 @@ void AVLTreeScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
             }
         }
 
+        //Input From file
         ImGui::Spacing();
-        ImGui::InputText("Filepath", filepathBuffer, IM_ARRAYSIZE(filepathBuffer));
+
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        ImGui::InputText("File Path", filepathBuffer, IM_ARRAYSIZE(filepathBuffer));
+
         if (ImGui::Button("Load from file", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
-            avlTree.initFromFile(filepathBuffer);
-            startAnimation();
+            if (strlen(filepathBuffer) == 0) {
+                std::cout << "Please enter file path\n";
+            } else {
+                avlTree.initFromFile(filepathBuffer);
+                startAnimation();
+            }
         }
     }
 
