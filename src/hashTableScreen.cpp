@@ -229,7 +229,7 @@ void HashTableScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
         ImGui::Spacing();
 
         for (size_t i = 0; i < code.size(); ++i) {
-            if (i == activeLine) {
+            if ((int)i == activeLine) {
                 ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", code[i].c_str());
             } else {
                 ImGui::Text("%s", code[i].c_str());
