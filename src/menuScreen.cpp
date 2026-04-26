@@ -2,6 +2,7 @@
 #include "menuScreen.h"
 #include "theme.h"
 #include "imgui.h"
+#include "graphScreen.h"
 #include "linkedListScreen.h"
 #include "AVLTreeScreen.h"
 #include "hashTableScreen.h"
@@ -103,7 +104,9 @@ void MenuScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
 
     ImGui::SetCursorPos(ImVec2(buttonStartX, currentY));
 	// Graph button here
-    if (ImGui::Button("Graph", buttonSize)) {}
+    if (ImGui::Button("Graph (Dijkstra)", buttonSize)) {
+        onChangeScreen(std::make_unique<GraphScreen>(onChangeScreen));
+    }
     ImGui::PopStyleColor(4);
 
     ImGui::PopStyleVar(2);

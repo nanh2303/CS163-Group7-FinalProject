@@ -40,6 +40,9 @@ file(GLOB_RECURSE SRC_FILES
 
 add_executable(app ${SRC_FILES})
 
+target_compile_features(app PRIVATE cxx_std_17)
+set_target_properties(app PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+
 target_link_libraries(app PRIVATE sfml-graphics sfml-window sfml-system ImGui-SFML::ImGui-SFML)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
