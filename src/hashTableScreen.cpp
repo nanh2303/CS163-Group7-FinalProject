@@ -4,35 +4,7 @@
 #include "imgui.h"
 #include "assetManager.h"
 #include "drawingUtils.h"
-
-#ifdef _WIN32
-#include <windows.h>
-#include <commdlg.h>
-#endif
-
-#ifdef _WIN32
-std::string openFileDialog() {
-    OPENFILENAMEA ofn;
-    CHAR szFile[260] = {0};
-    
-    ZeroMemory(&ofn, sizeof(OPENFILENAME));
-    ofn.lStructSize = sizeof(OPENFILENAME);
-    ofn.hwndOwner = NULL;
-    ofn.lpstrFile = szFile;
-    ofn.nMaxFile = sizeof(szFile);
-    ofn.lpstrFilter = "Text Files\0*.txt\0All Files\0*.*\0"; // Only show .txt by default
-    ofn.nFilterIndex = 1;
-    ofn.lpstrFileTitle = NULL;
-    ofn.nMaxFileTitle = 0;
-    ofn.lpstrInitialDir = NULL;
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-
-    if (GetOpenFileNameA(&ofn) == TRUE) {
-        return std::string(ofn.lpstrFile);
-    }
-    return ""; // User canceled the dialog
-}
-#endif
+#include "fileDialog.h"
 
 HashTableScreen::HashTableScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback) : onChangeScreen(std::move(changeScreenCallback)) {
     sf::Texture& bgTexture = AssetManager::getInstance().getTexture("main_bg");
@@ -257,7 +229,7 @@ void HashTableScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
         ImGui::Spacing();
 
         for (size_t i = 0; i < code.size(); ++i) {
-            if (i == activeLine) {
+            if ((int)i == activeLine) {
                 ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", code[i].c_str());
             } else {
                 ImGui::Text("%s", code[i].c_str());
