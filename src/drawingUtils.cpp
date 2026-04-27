@@ -1,6 +1,6 @@
 #include "drawingUtils.h"
 #include "theme.h"
-#include "AssetManager.h"
+#include "assetManager.h"
 #include <cmath>
 
 // Helper function to perfectly center text
