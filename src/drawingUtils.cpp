@@ -1,4 +1,4 @@
-#include "DrawingUtils.h"
+#include "drawingUtils.h"
 #include "theme.h"
 #include "AssetManager.h"
 #include <cmath>
