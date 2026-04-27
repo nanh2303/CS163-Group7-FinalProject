@@ -1,4 +1,4 @@
-#include "graphCore.h"
+#include "graph/graphCore.h"
 
 #include <algorithm>
 #include <fstream>

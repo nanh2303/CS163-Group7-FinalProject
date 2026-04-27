@@ -1,10 +1,10 @@
-#include "linkedListScreen.h"
-#include "menuScreen.h"
-#include "theme.h"
+#include "linked_list/linkedListScreen.h"
+#include "core/menuScreen.h"
+#include "core/theme.h"
 #include "imgui.h"
-#include "assetManager.h"
-#include "drawingUtils.h"
-#include "fileDialog.h"
+#include "core/assetManager.h"
+#include "core/drawingUtils.h"
+#include "core/fileDialog.h"
 
 LinkedListScreen::LinkedListScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback)
     : onChangeScreen(std::move(changeScreenCallback)) {

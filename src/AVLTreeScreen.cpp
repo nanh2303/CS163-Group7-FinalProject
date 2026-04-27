@@ -1,10 +1,10 @@
-#include "AVLTreeScreen.h"
-#include "menuScreen.h"
-#include "theme.h"
+#include "tree/AVLTreeScreen.h"
+#include "core/menuScreen.h"
+#include "core/theme.h"
 #include "imgui.h"
-#include "assetManager.h"
-#include "drawingUtils.h"
-#include "fileDialog.h"
+#include "core/assetManager.h"
+#include "core/drawingUtils.h"
+#include "core/fileDialog.h"
 #include <iostream>
 
 /*

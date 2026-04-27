@@ -1,6 +1,6 @@
 #pragma once
-#include "screen.h"
-#include "AVLTreeCore.h"
+#include "core/screen.h"
+#include "tree/AVLTreeCore.h"
 #include <functional>
 #include <memory>
 #include <SFML/Graphics.hpp>

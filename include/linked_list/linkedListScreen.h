@@ -1,6 +1,6 @@
 #pragma once
-#include "screen.h"
-#include "linkedListCore.h"
+#include "core/screen.h"
+#include "linked_list/linkedListCore.h"
 #include <functional>
 #include <memory>
 #include <SFML/Graphics.hpp>
