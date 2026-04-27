@@ -1,12 +1,11 @@
 #include "graphScreen.h"
-
+#include "fileDialog.h"
 #include "assetManager.h"
 #include "drawingUtils.h"
 #include "menuScreen.h"
 #include "theme.h"
-
 #include "imgui.h"
-
+#include "iostream"
 #include <cmath>
 #include <cstdio>
 #include <string>
@@ -92,11 +91,32 @@ void GraphScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
 			startAnimation();
 		}
 
+		
+		// Input From file
 		ImGui::Spacing();
-		ImGui::InputText("Filepath", filepathBuffer, IM_ARRAYSIZE(filepathBuffer));
+
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 90.0f);
+		ImGui::InputText("##filepath", filepathBuffer, IM_ARRAYSIZE(filepathBuffer));
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Browse", ImVec2(85.0f, 0))) {
+		#ifdef _WIN32
+			std::string selectedFile = openFileDialog();
+			if (!selectedFile.empty()) {
+				strncpy(filepathBuffer, selectedFile.c_str(), IM_ARRAYSIZE(filepathBuffer) - 1);
+				filepathBuffer[IM_ARRAYSIZE(filepathBuffer) - 1] = '\0';
+			}
+		#endif
+		}
+
 		if (ImGui::Button("Load from file", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
-			graph.initFromFile(filepathBuffer);
-			startAnimation();
+			if (strlen(filepathBuffer) == 0) {
+				std::cout << "Please enter file path\n";
+			} else {
+				graph.initFromFile(filepathBuffer);
+				startAnimation();
+			}
 		}
 		ImGui::TextWrapped("File format: one directed edge per line: u v weight (non-negative integers).");
 	}
@@ -106,8 +126,8 @@ void GraphScreen::update(sf::RenderWindow& window, sf::Time deltaTime) {
 			graph.addVertex();
 			startAnimation();
 		}
-		ImGui::InputInt("Edge u", &addEdgeU);
-		ImGui::InputInt("Edge v", &addEdgeV);
+		ImGui::InputInt("Edge u new", &addEdgeU);
+		ImGui::InputInt("Edge v new", &addEdgeV);
 		ImGui::InputInt("Weight", &addEdgeW);
 		if (ImGui::Button("Add / update edge", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
 			graph.addEdge(addEdgeU, addEdgeV, addEdgeW);
