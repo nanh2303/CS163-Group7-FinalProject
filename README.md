@@ -12,10 +12,10 @@ Data Structure Visualization
 - Khoa
 
 ## Selected Data Structures
--
--
--
--
+- Singly linked list
+- Hash table chaining
+- AVL tree
+- Graph
 
 ## Branch Strategy
 - `main`: stable release branch
