@@ -1,7 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <memory>
-#include "screen.h"
+#include "core/screen.h"
 
 class Application {
 private:

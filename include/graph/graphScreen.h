@@ -1,7 +1,7 @@
 #pragma once
 
-#include "graphCore.h"
-#include "screen.h"
+#include "graph/graphCore.h"
+#include "core/screen.h"
 
 #include <functional>
 #include <memory>

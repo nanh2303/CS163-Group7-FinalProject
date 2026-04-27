@@ -1,5 +1,5 @@
 #pragma once
-#include "screen.h"
+#include "core/screen.h"
 #include <functional>
 #include <memory>
 #include <SFML/Graphics/Texture.hpp>

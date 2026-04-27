@@ -1,4 +1,4 @@
-#include "hashTableCore.h"
+#include "hash_table/hashTableCore.h"
 #include <fstream>
 
 int HashTable::getHash(int value) {

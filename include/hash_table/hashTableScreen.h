@@ -2,8 +2,8 @@
 #include <SFML/Graphics.hpp>
 #include <functional>
 #include <memory>
-#include "screen.h"
-#include "hashTableCore.h"
+#include "core/screen.h"
+#include "hash_table/hashTableCore.h"
 
 
 class HashTableScreen : public Screen {

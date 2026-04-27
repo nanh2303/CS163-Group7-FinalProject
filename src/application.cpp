@@ -1,9 +1,9 @@
-#include "application.h"
-#include "theme.h"
+#include "core/application.h"
+#include "core/theme.h"
 #include "imgui.h"
 #include "imgui-SFML.h"
-#include "menuScreen.h"
-#include "assetManager.h"
+#include "core/menuScreen.h"
+#include "core/assetManager.h"
 
 Application::Application()
     : window(sf::VideoMode(1024, 768), "CS163 Group 7 - Data Structure Visualizer") {

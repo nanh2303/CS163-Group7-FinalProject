@@ -1,10 +1,10 @@
-#include "hashTableScreen.h"
-#include "menuScreen.h"
-#include "theme.h"
+#include "hash_table/hashTableScreen.h"
+#include "core/menuScreen.h"
+#include "core/theme.h"
 #include "imgui.h"
-#include "assetManager.h"
-#include "drawingUtils.h"
-#include "fileDialog.h"
+#include "core/assetManager.h"
+#include "core/drawingUtils.h"
+#include "core/fileDialog.h"
 
 HashTableScreen::HashTableScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback) : onChangeScreen(std::move(changeScreenCallback)) {
     sf::Texture& bgTexture = AssetManager::getInstance().getTexture("main_bg");

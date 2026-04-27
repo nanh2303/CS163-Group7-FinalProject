@@ -1,11 +1,11 @@
-#include "assetManager.h"
-#include "menuScreen.h"
-#include "theme.h"
+#include "core/assetManager.h"
+#include "core/menuScreen.h"
+#include "core/theme.h"
 #include "imgui.h"
-#include "graphScreen.h"
-#include "linkedListScreen.h"
-#include "AVLTreeScreen.h"
-#include "hashTableScreen.h"
+#include "graph/graphScreen.h"
+#include "linked_list/linkedListScreen.h"
+#include "tree/AVLTreeScreen.h"
+#include "hash_table/hashTableScreen.h"
 #include <algorithm>
 
 MenuScreen::MenuScreen(std::function<void(std::unique_ptr<Screen>)> changeScreenCallback)
